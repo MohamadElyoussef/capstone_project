@@ -659,16 +659,31 @@ export function AdminDashboardPage() {
     (room) => (room.room_type || "").toUpperCase() !== "LAB",
   ).length;
 
+  const regularFieldsBlank =
+    getScheduleLimitNumber(classroomLimit) === null ||
+    getScheduleLimitNumber(tutorialClassroomLimit) === null;
+
+  const summerFieldsBlank =
+    getScheduleLimitNumber(summerClassroomLimit) === null ||
+    getScheduleLimitNumber(summerTutorialClassroomLimit) === null;
+
   const regularLimitExceeded =
+    !regularFieldsBlank &&
     availableLectureRooms > 0 &&
     (getScheduleLimitNumber(classroomLimit) ?? 0) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 0) > availableLectureRooms;
 
   const summerLimitExceeded =
+    !summerFieldsBlank &&
     availableLectureRooms > 0 &&
     (getScheduleLimitNumber(summerClassroomLimit) ?? 0) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0) > availableLectureRooms;
 
   const onGenerateSchedule = async () => {
     setErrorMessage(null);
+
+    if (regularFieldsBlank) {
+      setErrorMessage("Please enter a number for both Lectures and Tutorials before generating.");
+      return;
+    }
 
     const classroomLimitNumber = getScheduleLimitNumber(classroomLimit) ?? 0;
     const tutorialLimitNumber = getScheduleLimitNumber(tutorialClassroomLimit) ?? 0;
@@ -1053,6 +1068,11 @@ export function AdminDashboardPage() {
 
   const onGenerateSummerSchedule = async () => {
     setErrorMessage(null);
+
+    if (summerFieldsBlank) {
+      setErrorMessage("Please enter a number for both Lectures and Tutorials before generating.");
+      return;
+    }
 
     const summerLectureNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 0;
     const summerTutorialNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0;
@@ -1774,7 +1794,7 @@ export function AdminDashboardPage() {
             <button
               type="button"
               onClick={() => void onGenerateSummerSchedule()}
-              disabled={loadingAction !== null || !hasData || summerLimitExceeded}
+              disabled={loadingAction !== null || !hasData || summerLimitExceeded || summerFieldsBlank}
               className="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all"
             >
               {loadingAction === "generate-summer"
@@ -1783,6 +1803,9 @@ export function AdminDashboardPage() {
             </button>
             {!hasData ? (
               <p className="text-xs text-amber-500/80">Import Rooms &amp; Courses CSV first.</p>
+            ) : null}
+            {hasData && summerFieldsBlank ? (
+              <p className="text-xs text-amber-500/80">Enter a number for Lectures and Tutorials first.</p>
             ) : null}
           </div>
         </div>
@@ -1939,13 +1962,16 @@ export function AdminDashboardPage() {
               <button
                 type="button"
                 onClick={() => void onGenerateSchedule()}
-                disabled={loadingAction !== null || !hasData || regularLimitExceeded}
+                disabled={loadingAction !== null || !hasData || regularLimitExceeded || regularFieldsBlank}
                 className={btnPrimary}
               >
                 {loadingAction === "generate"
                   ? "Generating..."
                   : "Generate Schedule"}
               </button>
+              {hasData && regularFieldsBlank ? (
+                <p className="text-xs text-amber-500/80">Enter a number for Lectures and Tutorials first.</p>
+              ) : null}
               {!hasData ? (
                 <p className="text-xs text-amber-500/80">Import Rooms &amp; Courses CSV first.</p>
               ) : null}
