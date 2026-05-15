@@ -651,7 +651,7 @@ export function AdminDashboardPage() {
 
     if (availableLectureRooms > 0 && classroomLimitNumber + tutorialLimitNumber > availableLectureRooms) {
       setErrorMessage(
-        `Lectures (${classroomLimitNumber}) + Tutorials (${tutorialLimitNumber}) = ${classroomLimitNumber + tutorialLimitNumber} exceeds the ${availableLectureRooms} available tutorial & lecture classrooms.`
+        `The combined classroom count (${classroomLimitNumber} Lectures + ${tutorialLimitNumber} Tutorials = ${classroomLimitNumber + tutorialLimitNumber}) cannot exceed the number of available classrooms (${availableLectureRooms}). Please lower the Lectures or Tutorials number.`
       );
       return;
     }
@@ -1035,7 +1035,7 @@ export function AdminDashboardPage() {
 
     if (availableLectureRooms > 0 && summerLectureNumber + summerTutorialNumber > availableLectureRooms) {
       setErrorMessage(
-        `Lectures (${summerLectureNumber}) + Tutorials (${summerTutorialNumber}) = ${summerLectureNumber + summerTutorialNumber} exceeds the ${availableLectureRooms} available tutorial & lecture classrooms.`
+        `The combined classroom count (${summerLectureNumber} Lectures + ${summerTutorialNumber} Tutorials = ${summerLectureNumber + summerTutorialNumber}) cannot exceed the number of available classrooms (${availableLectureRooms}). Please lower the Lectures or Tutorials number.`
       );
       return;
     }
@@ -1743,7 +1743,7 @@ export function AdminDashboardPage() {
           </div>
           {summerLimitExceeded ? (
             <p className="text-xs text-red-400">
-              Lectures + Tutorials total exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              The total ({(getScheduleLimitNumber(summerClassroomLimit) ?? 5) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4)} classrooms needed) exceeds the {availableLectureRooms} available classrooms. Please lower the Lectures or Tutorials number.
             </p>
           ) : null}
           <div className="flex flex-col gap-1">
@@ -1907,7 +1907,7 @@ export function AdminDashboardPage() {
           </div>
           {regularLimitExceeded ? (
             <p className="text-xs text-red-400">
-              Lectures + Tutorials total exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              The total ({(getScheduleLimitNumber(classroomLimit) ?? 5) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 4)} classrooms needed) exceeds the {availableLectureRooms} available classrooms. Please lower the Lectures or Tutorials number.
             </p>
           ) : null}
           <div className="flex flex-col gap-2">
