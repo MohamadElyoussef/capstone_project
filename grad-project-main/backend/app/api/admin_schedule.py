@@ -1,6 +1,8 @@
+import threading
+import uuid
 from collections import defaultdict
 from datetime import datetime, time
-from typing import Annotated, Any
+from typing import Annotated, Any, Dict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
@@ -18,10 +20,15 @@ from app.services.scheduling import (
     get_unscheduled_suggestions,
     get_weekly_schedule,
 )
+from app.db.session import SessionLocal
 from scripts.ga_schedule_sections import run_ga_schedule
 from scripts.ga_schedule_summer import run_summer_schedule
 
 router = APIRouter()
+
+# In-memory job store for async schedule generation.
+# Keys are short hex job IDs; values are dicts with status/result/detail.
+_schedule_jobs: Dict[str, Any] = {}
 
 
 class RegistrationStatusResponse(BaseModel):
@@ -276,7 +283,7 @@ class GenerateScheduleRequest(BaseModel):
     lecture_limit: int = 5
     tutorial_limit: int = 4
     lab_limit: int = 6
-    solver_time_seconds: int = 90
+    solver_time_seconds: int = 180
 
 
 @router.get("/data-status")
@@ -413,6 +420,117 @@ def generate_summer_schedule(
     )
     db.commit()
     return ScheduleGenerationResponse(**summary)
+
+
+@router.post("/generate-async")
+def generate_schedule_async(
+    current_user: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+    body: GenerateScheduleRequest = GenerateScheduleRequest(),
+) -> dict:
+    sections_count = db.scalar(select(func.count(Section.id))) or 0
+    rooms_count = db.scalar(select(func.count(Room.id))) or 0
+    if sections_count == 0 or rooms_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No data imported. Please import a Rooms CSV and Courses CSV before generating a schedule.",
+        )
+
+    job_id = uuid.uuid4().hex[:12]
+    _schedule_jobs[job_id] = {"status": "running"}
+
+    user_id = current_user.id
+    lec, tut, lab, secs = body.lecture_limit, body.tutorial_limit, body.lab_limit, body.solver_time_seconds
+
+    def _run() -> None:
+        job_db = SessionLocal()
+        try:
+            run_ga_schedule(
+                lecture_limit=lec, tutorial_limit=tut,
+                lab_limit=lab, solver_time_seconds=secs, db=job_db,
+            )
+            job_db.expire_all()
+            summary = _build_generate_summary(job_db)
+            log_audit(
+                job_db, actor_user_id=user_id, action="SCHEDULE_GENERATED_GA",
+                entity_type="schedule", entity_id="weekly", before_data=None,
+                after_data={"total_sections": summary["total_sections"],
+                            "scheduled_sections": summary["scheduled_sections"],
+                            "conflicts_found": summary["conflicts_found"]},
+            )
+            job_db.commit()
+            _schedule_jobs[job_id] = {
+                "status": "done",
+                "result": ScheduleGenerationResponse(**summary).model_dump(),
+            }
+        except Exception as exc:
+            _schedule_jobs[job_id] = {"status": "error", "detail": str(exc)}
+        finally:
+            job_db.close()
+
+    threading.Thread(target=_run, daemon=True).start()
+    return {"job_id": job_id, "status": "running"}
+
+
+@router.post("/generate-summer-async")
+def generate_summer_schedule_async(
+    current_user: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+    body: GenerateSummerScheduleRequest = GenerateSummerScheduleRequest(),
+) -> dict:
+    sections_count = db.scalar(select(func.count(Section.id))) or 0
+    rooms_count = db.scalar(select(func.count(Room.id))) or 0
+    if sections_count == 0 or rooms_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No data imported. Please import a Rooms CSV and Courses CSV before generating a schedule.",
+        )
+
+    job_id = uuid.uuid4().hex[:12]
+    _schedule_jobs[job_id] = {"status": "running"}
+
+    user_id = current_user.id
+    lec, tut, lab, secs = body.lecture_limit, body.tutorial_limit, body.lab_limit, body.solver_time_seconds
+
+    def _run() -> None:
+        job_db = SessionLocal()
+        try:
+            run_summer_schedule(
+                lecture_limit=lec, tutorial_limit=tut,
+                lab_limit=lab, solver_time_seconds=secs, db=job_db,
+            )
+            job_db.expire_all()
+            summary = _build_generate_summary(job_db)
+            log_audit(
+                job_db, actor_user_id=user_id, action="SCHEDULE_GENERATED_SUMMER",
+                entity_type="schedule", entity_id="weekly", before_data=None,
+                after_data={"total_sections": summary["total_sections"],
+                            "scheduled_sections": summary["scheduled_sections"],
+                            "conflicts_found": summary["conflicts_found"]},
+            )
+            job_db.commit()
+            _schedule_jobs[job_id] = {
+                "status": "done",
+                "result": ScheduleGenerationResponse(**summary).model_dump(),
+            }
+        except Exception as exc:
+            _schedule_jobs[job_id] = {"status": "error", "detail": str(exc)}
+        finally:
+            job_db.close()
+
+    threading.Thread(target=_run, daemon=True).start()
+    return {"job_id": job_id, "status": "running"}
+
+
+@router.get("/job-status/{job_id}")
+def get_schedule_job_status(
+    _: Annotated[User, Depends(require_admin)],
+    job_id: str,
+) -> dict:
+    job = _schedule_jobs.get(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found or expired.")
+    return job
 
 
 class ClearScheduleResponse(BaseModel):

@@ -428,6 +428,35 @@ export async function manualUpdateSectionSchedule(
   );
 }
 
+export interface ScheduleJobStart {
+  job_id: string;
+  status: string;
+}
+
+export interface ScheduleJobStatus {
+  status: "running" | "done" | "error";
+  result?: GenerateScheduleResponse;
+  detail?: string;
+}
+
+export async function startGenerateSchedule(lectureLimit: number, tutorialLimit: number): Promise<ScheduleJobStart> {
+  return request<ScheduleJobStart>("/admin/schedule/generate-async", {
+    method: "POST",
+    body: { lecture_limit: lectureLimit, tutorial_limit: tutorialLimit },
+  });
+}
+
+export async function startGenerateSummerSchedule(lectureLimit: number, tutorialLimit: number, labLimit: number = 6): Promise<ScheduleJobStart> {
+  return request<ScheduleJobStart>("/admin/schedule/generate-summer-async", {
+    method: "POST",
+    body: { lecture_limit: lectureLimit, tutorial_limit: tutorialLimit, lab_limit: labLimit },
+  });
+}
+
+export async function getScheduleJobStatus(jobId: string): Promise<ScheduleJobStatus> {
+  return request<ScheduleJobStatus>(`/admin/schedule/job-status/${jobId}`);
+}
+
 export interface ClearScheduleResponse {
   meetings_deleted: number;
   message: string;

@@ -44,6 +44,9 @@ import {
   clearSchedule,
   generateSchedule,
   generateSummerSchedule,
+  startGenerateSchedule,
+  startGenerateSummerSchedule,
+  getScheduleJobStatus,
   getActiveScheduleType,
   getAuditLogs,
   getAvailableSlots,
@@ -725,38 +728,52 @@ export function AdminDashboardPage() {
     }, 900);
 
     try {
-      const response = await generateSchedule(
-        classroomLimitNumber,
-        tutorialLimitNumber,
-      );
+      const { job_id } = await startGenerateSchedule(classroomLimitNumber, tutorialLimitNumber);
 
-      window.clearInterval(progressTimer);
-      setFakeProgress(100);
-      setProgressLabel("Schedule generated successfully.");
-
-      setSummary(response);
-      setUnscheduledSections(response.unscheduled_sections);
-      setTimetableRefreshKey((value) => value + 1);
-      setShowUnscheduled(true);
-      setActiveScheduleType("regular");
-
-      window.setTimeout(() => {
-        setShowProgressBar(false);
-        setFakeProgress(0);
-        setProgressLabel("");
-      }, 1200);
+      const pollTimer = window.setInterval(() => {
+        void (async () => {
+          try {
+            const job = await getScheduleJobStatus(job_id);
+            if (job.status === "done" && job.result) {
+              window.clearInterval(pollTimer);
+              window.clearInterval(progressTimer);
+              setFakeProgress(100);
+              setProgressLabel("Schedule generated successfully.");
+              setSummary(job.result);
+              setUnscheduledSections(job.result.unscheduled_sections);
+              setTimetableRefreshKey((value) => value + 1);
+              setShowUnscheduled(true);
+              setActiveScheduleType("regular");
+              window.setTimeout(() => {
+                setShowProgressBar(false);
+                setFakeProgress(0);
+                setProgressLabel("");
+              }, 1200);
+              setLoadingAction(null);
+            } else if (job.status === "error") {
+              window.clearInterval(pollTimer);
+              window.clearInterval(progressTimer);
+              setShowProgressBar(false);
+              setFakeProgress(0);
+              setProgressLabel("");
+              setErrorMessage(job.detail ?? "Failed to generate schedule.");
+              setLoadingAction(null);
+            }
+          } catch {
+            // polling error — keep trying
+          }
+        })();
+      }, 3000);
     } catch (error) {
       window.clearInterval(progressTimer);
       setShowProgressBar(false);
       setFakeProgress(0);
       setProgressLabel("");
-
       const message =
         error instanceof ApiError
           ? error.detail
-          : "Failed to generate schedule.";
+          : "Failed to start schedule generation.";
       setErrorMessage(message);
-    } finally {
       setLoadingAction(null);
     }
   };
@@ -1134,20 +1151,42 @@ export function AdminDashboardPage() {
     try {
       const classroomLimitNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 0;
       const tutorialLimitNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0;
-      const response = await generateSummerSchedule(classroomLimitNumber, tutorialLimitNumber);
-      window.clearInterval(progressTimer);
-      setFakeProgress(100);
-      setProgressLabel("Summer schedule generated successfully.");
-      setSummary(response);
-      setUnscheduledSections(response.unscheduled_sections);
-      setTimetableRefreshKey((value) => value + 1);
-      setShowUnscheduled(true);
-      setActiveScheduleType("summer");
-      window.setTimeout(() => {
-        setShowProgressBar(false);
-        setFakeProgress(0);
-        setProgressLabel("");
-      }, 1200);
+      const { job_id } = await startGenerateSummerSchedule(classroomLimitNumber, tutorialLimitNumber);
+
+      const pollTimer = window.setInterval(() => {
+        void (async () => {
+          try {
+            const job = await getScheduleJobStatus(job_id);
+            if (job.status === "done" && job.result) {
+              window.clearInterval(pollTimer);
+              window.clearInterval(progressTimer);
+              setFakeProgress(100);
+              setProgressLabel("Summer schedule generated successfully.");
+              setSummary(job.result);
+              setUnscheduledSections(job.result.unscheduled_sections);
+              setTimetableRefreshKey((value) => value + 1);
+              setShowUnscheduled(true);
+              setActiveScheduleType("summer");
+              window.setTimeout(() => {
+                setShowProgressBar(false);
+                setFakeProgress(0);
+                setProgressLabel("");
+              }, 1200);
+              setLoadingAction(null);
+            } else if (job.status === "error") {
+              window.clearInterval(pollTimer);
+              window.clearInterval(progressTimer);
+              setShowProgressBar(false);
+              setFakeProgress(0);
+              setProgressLabel("");
+              setErrorMessage(job.detail ?? "Failed to generate summer schedule.");
+              setLoadingAction(null);
+            }
+          } catch {
+            // polling error — keep trying
+          }
+        })();
+      }, 3000);
     } catch (error) {
       window.clearInterval(progressTimer);
       setShowProgressBar(false);
@@ -1156,9 +1195,8 @@ export function AdminDashboardPage() {
       const message =
         error instanceof ApiError
           ? error.detail
-          : "Failed to generate summer schedule.";
+          : "Failed to start summer schedule generation.";
       setErrorMessage(message);
-    } finally {
       setLoadingAction(null);
     }
   };
