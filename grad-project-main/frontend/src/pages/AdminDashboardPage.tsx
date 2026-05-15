@@ -661,17 +661,17 @@ export function AdminDashboardPage() {
 
   const regularLimitExceeded =
     availableLectureRooms > 0 &&
-    (getScheduleLimitNumber(classroomLimit) ?? 5) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 4) > availableLectureRooms;
+    (getScheduleLimitNumber(classroomLimit) ?? 0) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 0) > availableLectureRooms;
 
   const summerLimitExceeded =
     availableLectureRooms > 0 &&
-    (getScheduleLimitNumber(summerClassroomLimit) ?? 5) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4) > availableLectureRooms;
+    (getScheduleLimitNumber(summerClassroomLimit) ?? 0) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0) > availableLectureRooms;
 
   const onGenerateSchedule = async () => {
     setErrorMessage(null);
 
-    const classroomLimitNumber = getScheduleLimitNumber(classroomLimit) ?? 5;
-    const tutorialLimitNumber = getScheduleLimitNumber(tutorialClassroomLimit) ?? 4;
+    const classroomLimitNumber = getScheduleLimitNumber(classroomLimit) ?? 0;
+    const tutorialLimitNumber = getScheduleLimitNumber(tutorialClassroomLimit) ?? 0;
 
     if (availableLectureRooms > 0 && classroomLimitNumber + tutorialLimitNumber > availableLectureRooms) {
       setErrorMessage(
@@ -1054,8 +1054,8 @@ export function AdminDashboardPage() {
   const onGenerateSummerSchedule = async () => {
     setErrorMessage(null);
 
-    const summerLectureNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 5;
-    const summerTutorialNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4;
+    const summerLectureNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 0;
+    const summerTutorialNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0;
 
     if (availableLectureRooms > 0 && summerLectureNumber + summerTutorialNumber > availableLectureRooms) {
       setErrorMessage(
@@ -1090,8 +1090,8 @@ export function AdminDashboardPage() {
     }, 900);
 
     try {
-      const classroomLimitNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 5;
-      const tutorialLimitNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4;
+      const classroomLimitNumber = getScheduleLimitNumber(summerClassroomLimit) ?? 0;
+      const tutorialLimitNumber = getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0;
       const response = await generateSummerSchedule(classroomLimitNumber, tutorialLimitNumber);
       window.clearInterval(progressTimer);
       setFakeProgress(100);
@@ -1767,7 +1767,7 @@ export function AdminDashboardPage() {
           </div>
           {summerLimitExceeded ? (
             <p className="text-xs text-red-400">
-              {(getScheduleLimitNumber(summerClassroomLimit) ?? 5) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              {(getScheduleLimitNumber(summerClassroomLimit) ?? 0) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 0)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
             </p>
           ) : null}
           <div className="flex flex-col gap-1">
@@ -1931,7 +1931,7 @@ export function AdminDashboardPage() {
           </div>
           {regularLimitExceeded ? (
             <p className="text-xs text-red-400">
-              {(getScheduleLimitNumber(classroomLimit) ?? 5) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 4)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              {(getScheduleLimitNumber(classroomLimit) ?? 0) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 0)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
             </p>
           ) : null}
           <div className="flex flex-col gap-2">
