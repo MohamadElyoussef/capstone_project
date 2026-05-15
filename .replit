@@ -1,4 +1,4 @@
-modules = ["python-3.12", "nodejs-20", "web", "postgresql-16"]
+modules = ["python-3.12", "nodejs-20", "web"]
 [agent]
 expertMode = true
 stack = "BEST_EFFORT_FALLBACK"
@@ -32,7 +32,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd grad-project-main/frontend && npm run dev"
+args = "cd grad-project-main/frontend && PATH=/home/runner/workspace/node_modules/.bin:$PATH npm run dev"
 waitForPort = 5000
 
 [[workflows.workflow]]
@@ -44,16 +44,12 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd grad-project-main/backend && python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+args = "cd grad-project-main/backend && PATH=/home/runner/workspace/.pythonlibs/bin:$PATH uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 waitForPort = 8000
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3001
 
 [[ports]]
 localPort = 8000
