@@ -1767,7 +1767,7 @@ export function AdminDashboardPage() {
           </div>
           {summerLimitExceeded ? (
             <p className="text-xs text-red-400">
-              Lectures + Tutorials total exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              {(getScheduleLimitNumber(summerClassroomLimit) ?? 5) + (getScheduleLimitNumber(summerTutorialClassroomLimit) ?? 4)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
             </p>
           ) : null}
           <div className="flex flex-col gap-1">
@@ -1931,7 +1931,7 @@ export function AdminDashboardPage() {
           </div>
           {regularLimitExceeded ? (
             <p className="text-xs text-red-400">
-              Lectures + Tutorials total exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
+              {(getScheduleLimitNumber(classroomLimit) ?? 5) + (getScheduleLimitNumber(tutorialClassroomLimit) ?? 4)} exceeds the {availableLectureRooms} available classrooms. Please reduce one or both values.
             </p>
           ) : null}
           <div className="flex flex-col gap-2">
