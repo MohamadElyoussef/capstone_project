@@ -43,7 +43,7 @@ const DAY_LABELS: Record<(typeof DAYS)[number], string> = {
   FRI: "Friday",
 };
 const START_HOUR = 8;
-const END_HOUR = 18;
+const END_HOUR = 20;
 const FRIDAY_END_HOUR = 13;
 const START_MINUTES = START_HOUR * 60;
 const END_MINUTES = END_HOUR * 60;
