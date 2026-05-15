@@ -1,0 +1,11 @@
+{
+  "name": "uniclass-scheduler",
+  "private": true,
+  "workspaces": [
+    "grad-project-main/frontend"
+  ],
+  "scripts": {
+    "build": "npm --prefix grad-project-main/frontend run build",
+    "start": "bash -c 'cd grad-project-main/backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 & cd grad-project-main/frontend && npm run preview -- --host 0.0.0.0 --port 5000'"
+  }
+}

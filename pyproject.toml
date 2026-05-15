@@ -1,0 +1,19 @@
+[project]
+name = "repl-nix-workspace"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.12"
+dependencies = [
+    "alembic==1.17.1",
+    "fastapi==0.121.1",
+    "openpyxl==3.1.5",
+    "ortools>=9.15.6755",
+    "pandas==2.3.3",
+    "passlib[bcrypt]==1.7.4",
+    "psycopg2-binary>=2.9.11",
+    "pydantic-settings==2.11.0",
+    "python-jose[cryptography]==3.5.0",
+    "python-multipart==0.0.20",
+    "sqlalchemy==2.0.44",
+    "uvicorn[standard]==0.38.0",
+]

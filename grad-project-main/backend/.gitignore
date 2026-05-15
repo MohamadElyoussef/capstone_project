@@ -1,0 +1,15 @@
+# Backend Python cache
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# Local virtual environment
+.venv/
+
+# Environment files
+.env
+
+# IDE folders
+.vscode/
+.idea/

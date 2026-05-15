@@ -1,0 +1,141 @@
+@import "tailwindcss";
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  min-width: 320px;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  line-height: 1.4;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* ── Timetable classes used by doctor schedule grid in AdminDashboardPage ── */
+
+.timetable-wrapper {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 0.65rem;
+}
+
+.time-axis {
+  display: grid;
+  grid-template-rows: 28px repeat(11, 60px);
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.time-axis-label {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding-right: 0.35rem;
+}
+
+.timetable-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(140px, 1fr));
+  gap: 0.55rem;
+}
+
+.timetable-day-column {
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 0.5rem;
+  background: #1e293b;
+  overflow: hidden;
+}
+
+.timetable-day-head {
+  background: #1e2d45;
+  border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+  padding: 0.4rem 0.5rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: #93c5fd;
+}
+
+.timetable-day-body {
+  position: relative;
+  background-image: linear-gradient(to bottom, rgba(99, 102, 241, 0.07) 1px, transparent 1px);
+  background-size: 100% 60px;
+}
+
+.timetable-day-body-friday::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 240px;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.5);
+  pointer-events: none;
+}
+
+.timetable-meeting {
+  position: absolute;
+  border-radius: 0.4rem;
+  padding: 0.28rem 0.35rem;
+  color: #fff;
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.72rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  transition: box-shadow 0.2s ease;
+  cursor: pointer;
+}
+
+.timetable-meeting:hover {
+  z-index: 50;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+}
+
+.timetable-meeting strong {
+  font-size: 0.74rem;
+}
+
+@media (max-width: 860px) {
+  .timetable-wrapper {
+    grid-template-columns: 1fr;
+  }
+
+  .time-axis {
+    grid-template-rows: none;
+    grid-template-columns: repeat(6, auto);
+    gap: 0.35rem;
+  }
+
+  .time-axis-label {
+    justify-content: flex-start;
+  }
+}
+
+/* Print */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+
+  .print-area {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

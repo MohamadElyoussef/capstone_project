@@ -1,0 +1,33 @@
+I am building a web application for university course scheduling. I have a list of Lecture courses, some of which have assigned instructors, and some of which are marked as "TBA" (e.g., "Artificial Intelligence/ENG" and "IT Fundamentals/ARB").
+
+Please build a UI component with the following requirements:
+
+### 1. UI Display & Input
+- Display a list or table of the lecture courses and their sections.
+- For courses that already have a doctor, display the doctor's name as plain text.
+- For "TBA" courses, display a dynamic text input field instead of a standard dropdown select. 
+- **Autocomplete/Suggestion:** As the user types in this input, suggest names from the "Doctor Database" provided below. 
+- **Validation:** The input must automatically force or validate that the name starts with the prefix "Dr. ".
+
+### 2. Instructor Assignment Rules (CRITICAL LOGIC)
+- **Course Limit:** An instructor can teach a maximum of 1 or 2 unique courses.
+- **Exclusive Course Ownership:** If an instructor is assigned to a course, they MUST teach ALL sections of that course. No other instructor can take any section of that course. 
+- **Global Sync:** If a user types "Dr. John Doe" into the TBA field for Section 1 of "Artificial Intelligence/ENG", the application must automatically assign "Dr. John Doe" to ALL other sections of "Artificial Intelligence/ENG". 
+
+### 3. Doctor Database & Course Mapping
+Please use the following data structure to enforce which doctor is allowed to teach which existing courses. If a user tries to assign a doctor to a course not in their allowed list (unless it's a completely unassigned new doctor for a TBA course), show an error/warning.
+
+{
+  "Dr. Salam Fraihat": ["Introduction to Data Analytics", "Programming for Data Analytics I"],
+  "Dr. Mahmoud Hammad": ["Introductory Programming", "Game Programming"],
+  "Dr. Mahmoud AlShboul": ["Calculus Information Technol.", "Discrete Mathematics"],
+  "Dr. Mohammed Betar": ["Infor. Technol. in Business", "Object Oriented Programming"],
+  "Dr. Atta ur Rehman Khan": ["Fund. of Data Comm. & Network", "Advanced Computer Networks"],
+  "Dr. Riyadh Mehdi": ["Data Structures", "Big Data Analytics and Tech."],
+  "Dr. Usman Butt": ["Operating Systems", "Fund. of Information Security"],
+  "Dr. Shafiz Yusof": ["Fund. of Software Engin.", "User Interface Design"],
+  "Dr. Ghazi AlNaymat": ["Database Mgmt. Sytms."],
+  "Dr. Elfadil Abdalla": ["Database Management Systems"]
+}
+
+Please write this using [INSERT YOUR PREFERRED LANGUAGE/FRAMEWORK HERE, e.g., HTML/Vanilla JS, React, or Python/Flask] and ensure the state management handles the Exclusive Course Ownership sync perfectly.
