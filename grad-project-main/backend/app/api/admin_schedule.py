@@ -415,6 +415,45 @@ def generate_summer_schedule(
     return ScheduleGenerationResponse(**summary)
 
 
+class ClearScheduleResponse(BaseModel):
+    meetings_deleted: int
+    message: str
+
+
+@router.delete("/clear", response_model=ClearScheduleResponse)
+def clear_schedule(
+    current_user: Annotated[User, Depends(require_admin)],
+    db: Annotated[Session, Depends(get_db)],
+) -> ClearScheduleResponse:
+    meetings_deleted = db.scalar(select(func.count(ScheduledMeeting.id))) or 0
+
+    db.execute(delete(ScheduledMeeting))
+
+    db.execute(
+        Section.__table__.update().values(
+            days=None,
+            start_time=None,
+            end_time=None,
+        )
+    )
+
+    log_audit(
+        db,
+        actor_user_id=current_user.id,
+        action="SCHEDULE_CLEARED",
+        entity_type="schedule",
+        entity_id="all",
+        before_data={"meetings_deleted": meetings_deleted},
+        after_data=None,
+    )
+    db.commit()
+
+    return ClearScheduleResponse(
+        meetings_deleted=meetings_deleted,
+        message=f"Schedule cleared. {meetings_deleted} meeting(s) removed.",
+    )
+
+
 @router.get("/rooms", response_model=list[RoomOptionResponse])
 def get_rooms(
     _: Annotated[User, Depends(require_admin)],

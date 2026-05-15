@@ -41,6 +41,7 @@ import {
   type SectionSuggestion,
   type UnscheduledSection,
   ApiError,
+  clearSchedule,
   generateSchedule,
   generateSummerSchedule,
   getActiveScheduleType,
@@ -1066,6 +1067,27 @@ export function AdminDashboardPage() {
     }
   };
 
+  const onClearSchedule = async () => {
+    if (!window.confirm("Clear the entire schedule? This will remove all time assignments from the grid. You can regenerate afterwards.")) {
+      return;
+    }
+    setErrorMessage(null);
+    setLoadingAction("clear-schedule");
+    try {
+      const result = await clearSchedule();
+      setProgressLabel(result.message);
+      setSummary(null);
+      setUnscheduledSections([]);
+      setTimetableRefreshKey((k) => k + 1);
+    } catch (error) {
+      const message =
+        error instanceof ApiError ? error.detail : "Failed to clear schedule.";
+      setErrorMessage(message);
+    } finally {
+      setLoadingAction(null);
+    }
+  };
+
   const onGenerateSummerSchedule = async () => {
     setErrorMessage(null);
 
@@ -1791,16 +1813,27 @@ export function AdminDashboardPage() {
             </p>
           ) : null}
           <div className="flex flex-col gap-1">
-            <button
-              type="button"
-              onClick={() => void onGenerateSummerSchedule()}
-              disabled={loadingAction !== null || !hasData || summerLimitExceeded || summerFieldsBlank}
-              className="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all"
-            >
-              {loadingAction === "generate-summer"
-                ? "Generating..."
-                : "Generate Summer Schedule"}
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => void onGenerateSummerSchedule()}
+                disabled={loadingAction !== null || !hasData || summerLimitExceeded || summerFieldsBlank}
+                className="flex-1 px-3 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all"
+              >
+                {loadingAction === "generate-summer"
+                  ? "Generating..."
+                  : "Generate Summer Schedule"}
+              </button>
+              <button
+                type="button"
+                onClick={() => void onClearSchedule()}
+                disabled={loadingAction !== null || !hasData}
+                className="px-3 py-1.5 bg-red-700/60 hover:bg-red-600/80 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all border border-red-600/40"
+                title="Clear all scheduled meetings"
+              >
+                {loadingAction === "clear-schedule" ? "Clearing..." : "Clear"}
+              </button>
+            </div>
             {!hasData ? (
               <p className="text-xs text-amber-500/80">Import Rooms &amp; Courses CSV first.</p>
             ) : null}
@@ -1959,16 +1992,27 @@ export function AdminDashboardPage() {
           ) : null}
           <div className="flex flex-col gap-2">
             <div className="flex flex-col gap-1">
-              <button
-                type="button"
-                onClick={() => void onGenerateSchedule()}
-                disabled={loadingAction !== null || !hasData || regularLimitExceeded || regularFieldsBlank}
-                className={btnPrimary}
-              >
-                {loadingAction === "generate"
-                  ? "Generating..."
-                  : "Generate Schedule"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => void onGenerateSchedule()}
+                  disabled={loadingAction !== null || !hasData || regularLimitExceeded || regularFieldsBlank}
+                  className={`${btnPrimary} flex-1`}
+                >
+                  {loadingAction === "generate"
+                    ? "Generating..."
+                    : "Generate Schedule"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void onClearSchedule()}
+                  disabled={loadingAction !== null || !hasData}
+                  className="px-3 py-1.5 bg-red-700/60 hover:bg-red-600/80 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-all border border-red-600/40"
+                  title="Clear all scheduled meetings"
+                >
+                  {loadingAction === "clear-schedule" ? "Clearing..." : "Clear"}
+                </button>
+              </div>
               {hasData && regularFieldsBlank ? (
                 <p className="text-xs text-amber-500/80">Enter a number for Lectures and Tutorials first.</p>
               ) : null}

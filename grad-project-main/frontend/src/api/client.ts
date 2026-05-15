@@ -428,6 +428,17 @@ export async function manualUpdateSectionSchedule(
   );
 }
 
+export interface ClearScheduleResponse {
+  meetings_deleted: number;
+  message: string;
+}
+
+export async function clearSchedule(): Promise<ClearScheduleResponse> {
+  return request<ClearScheduleResponse>("/admin/schedule/clear", {
+    method: "DELETE",
+  });
+}
+
 export async function getDataStatus(): Promise<{ sections_count: number; rooms_count: number }> {
   return request<{ sections_count: number; rooms_count: number }>("/admin/schedule/data-status");
 }
