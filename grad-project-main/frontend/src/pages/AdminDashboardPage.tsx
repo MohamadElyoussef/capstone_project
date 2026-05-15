@@ -427,10 +427,18 @@ function getAllScheduledMeetings(
 
 export function AdminDashboardPage() {
   const [summary, setSummary] = useState<GenerateScheduleResponse | null>(null);
-  const [classroomLimit, setClassroomLimit] = useState<string>("-");
-  const [tutorialClassroomLimit, setTutorialClassroomLimit] = useState<string>("-");
-  const [summerClassroomLimit, setSummerClassroomLimit] = useState<string>("-");
-  const [summerTutorialClassroomLimit, setSummerTutorialClassroomLimit] = useState<string>("-");
+  const [classroomLimit, setClassroomLimit] = useState<string>(
+    () => localStorage.getItem("classroomLimit") ?? "-"
+  );
+  const [tutorialClassroomLimit, setTutorialClassroomLimit] = useState<string>(
+    () => localStorage.getItem("tutorialClassroomLimit") ?? "-"
+  );
+  const [summerClassroomLimit, setSummerClassroomLimit] = useState<string>(
+    () => localStorage.getItem("summerClassroomLimit") ?? "-"
+  );
+  const [summerTutorialClassroomLimit, setSummerTutorialClassroomLimit] = useState<string>(
+    () => localStorage.getItem("summerTutorialClassroomLimit") ?? "-"
+  );
   const [unscheduledSections, setUnscheduledSections] = useState<
     UnscheduledSection[]
   >([]);
@@ -551,6 +559,22 @@ export function AdminDashboardPage() {
       .then((map) => setDoctorCoursesMap(map))
       .catch(() => {});
   }, [selectedDoctor]);
+
+  useEffect(() => {
+    if (classroomLimit !== "-") localStorage.setItem("classroomLimit", classroomLimit);
+  }, [classroomLimit]);
+
+  useEffect(() => {
+    if (tutorialClassroomLimit !== "-") localStorage.setItem("tutorialClassroomLimit", tutorialClassroomLimit);
+  }, [tutorialClassroomLimit]);
+
+  useEffect(() => {
+    if (summerClassroomLimit !== "-") localStorage.setItem("summerClassroomLimit", summerClassroomLimit);
+  }, [summerClassroomLimit]);
+
+  useEffect(() => {
+    if (summerTutorialClassroomLimit !== "-") localStorage.setItem("summerTutorialClassroomLimit", summerTutorialClassroomLimit);
+  }, [summerTutorialClassroomLimit]);
 
   const onLogout = () => {
     clearAuthStorage();
