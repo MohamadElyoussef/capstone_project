@@ -3,10 +3,11 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from ortools.sat.python import cp_model
 from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
 from app.db.models import Course, Room, ScheduledMeeting, Section
 from app.db.session import SessionLocal
@@ -222,9 +223,12 @@ def run_ga_schedule(
     solver_time_seconds: int = 180,
     max_sections_per_instructor_per_day: int = 3,
     max_instructor_gap_slots: int = 4,
+    db: Optional[Session] = None,
 ) -> None:
     print("=== RUN_GA_SCHEDULE FAST 2026-04-24 ===")
-    db = SessionLocal()
+    _owns_db = db is None
+    if _owns_db:
+        db = SessionLocal()
     try:
         courses = db.scalars(select(Course)).all()
         sections = db.scalars(select(Section)).all()
@@ -496,6 +500,7 @@ def run_ga_schedule(
                 solver_time_seconds=solver_time_seconds,
                 max_sections_per_instructor_per_day=max_sections_per_instructor_per_day,
                 max_instructor_gap_slots=-1,
+                db=db if not _owns_db else None,
             )
 
         if status not in (cp_model.FEASIBLE, cp_model.OPTIMAL):
@@ -504,7 +509,7 @@ def run_ga_schedule(
 
         print("✅ solved")
 
-        db.execute(delete(ScheduledMeeting))
+        db.execute(delete(ScheduledMeeting))  # type: ignore[union-attr]
         db.flush()
 
         raw_sections_by_id: Dict[int, Section] = {s.id: s for s in sections}
@@ -558,7 +563,8 @@ def run_ga_schedule(
                 print(item)
 
     finally:
-        db.close()
+        if _owns_db:
+            db.close()  # type: ignore[union-attr]
 
 
 if __name__ == "__main__":

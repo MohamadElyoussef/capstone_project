@@ -3,10 +3,11 @@ from __future__ import annotations
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import time
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from ortools.sat.python import cp_model
 from sqlalchemy import delete, select
+from sqlalchemy.orm import Session
 
 from app.db.models import Course, Room, ScheduledMeeting, Section
 from app.db.session import SessionLocal
@@ -246,9 +247,12 @@ def run_summer_schedule(
     lab_limit: int = 6,
     solver_time_seconds: int = 55,
     max_sections_per_instructor_per_day: int = 3,
+    db: Optional[Session] = None,
 ) -> None:
     print("=== RUN_SUMMER_SCHEDULE 2026 ===")
-    db = SessionLocal()
+    _owns_db = db is None
+    if _owns_db:
+        db = SessionLocal()
     try:
         courses = db.scalars(select(Course)).all()
         sections = db.scalars(select(Section)).all()
@@ -560,7 +564,8 @@ def run_summer_schedule(
         _sched_module._HAS_GENERATED_SCHEDULE = True
 
     finally:
-        db.close()
+        if _owns_db:
+            db.close()  # type: ignore[union-attr]
 
 
 if __name__ == "__main__":

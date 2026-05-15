@@ -302,12 +302,19 @@ def generate_schedule(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="No data imported. Please import a Rooms CSV and Courses CSV before generating a schedule.",
         )
-    run_ga_schedule(
-        lecture_limit=body.lecture_limit,
-        tutorial_limit=body.tutorial_limit,
-        lab_limit=body.lab_limit,
-        solver_time_seconds=body.solver_time_seconds,
-    )
+    try:
+        run_ga_schedule(
+            lecture_limit=body.lecture_limit,
+            tutorial_limit=body.tutorial_limit,
+            lab_limit=body.lab_limit,
+            solver_time_seconds=body.solver_time_seconds,
+            db=db,
+        )
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Schedule generation failed: {exc}",
+        ) from exc
 
     db.expire_all()
 
@@ -379,6 +386,7 @@ def generate_summer_schedule(
             tutorial_limit=body.tutorial_limit,
             lab_limit=body.lab_limit,
             solver_time_seconds=body.solver_time_seconds,
+            db=db,
         )
     except Exception as exc:
         raise HTTPException(
