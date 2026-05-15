@@ -18,8 +18,8 @@ export default defineConfig({
       "/api": {
         target: "http://127.0.0.1:8000",
         changeOrigin: false,
-        proxyTimeout: 120000,
-        timeout: 120000,
+        proxyTimeout: 600000,
+        timeout: 600000,
         configure: (proxy) => {
           proxy.on("error", (err, _req, _res) => {
             console.error("[proxy error]", err.message);
@@ -36,8 +36,8 @@ export default defineConfig({
       "/api": {
         target: "http://127.0.0.1:8000",
         changeOrigin: false,
-        proxyTimeout: 120000,
-        timeout: 120000,
+        proxyTimeout: 600000,
+        timeout: 600000,
       },
     },
   },

@@ -276,7 +276,7 @@ class GenerateScheduleRequest(BaseModel):
     lecture_limit: int = 5
     tutorial_limit: int = 4
     lab_limit: int = 6
-    solver_time_seconds: int = 180
+    solver_time_seconds: int = 90
 
 
 @router.get("/data-status")
