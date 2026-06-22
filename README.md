@@ -45,7 +45,7 @@ Two services run simultaneously:
 ```bash
 # Backend
 cd grad-project-main/backend
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 
 # Frontend
 cd grad-project-main/frontend
